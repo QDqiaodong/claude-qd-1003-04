@@ -1,0 +1,124 @@
+:root {
+  /* 深柠檬主色 —— 与已建各仓的主色均不重复 */
+  --primary: #afb42b;
+  --primary-deep: #827717;
+  --primary-soft: #c0ca33;
+  --primary-wash: #f4f8e2;
+  --ink: #33390f;
+  --muted: #7c8357;
+  --line: #e3e6cf;
+  --bg: #fbfcf5;
+
+  --el-color-primary: #afb42b;
+  --el-color-primary-light-3: #c8d062;
+  --el-color-primary-light-5: #d8dd8d;
+  --el-color-primary-light-7: #e6e9b4;
+  --el-color-primary-light-8: #eeF0C6;
+  --el-color-primary-light-9: #f6f7e1;
+  --el-color-primary-dark-2: #8c9022;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  /* 底部导航条留出空间 */
+  padding-bottom: 72px;
+}
+
+/* ---------------- 顶部标题条 ---------------- */
+.sugar-app { min-height: 100vh; }
+
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 18px;
+  background: linear-gradient(100deg, var(--primary-deep), var(--primary));
+  color: #fff;
+}
+.topbar .t-title { font-size: 16px; font-weight: 800; }
+.topbar .t-sub { font-size: 12px; opacity: 0.82; margin-top: 2px; }
+.topbar .t-right { margin-left: auto; font-size: 12px; opacity: 0.9; }
+
+/* ---------------- 底部 chips 横滑导航条 ---------------- */
+.chips-bar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex; gap: 8px;
+  padding: 10px 14px;
+  overflow-x: auto;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+  z-index: 50;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 隐藏滚动条但保留横滑 */
+.chips-bar::-webkit-scrollbar { height: 0; }
+
+.chip {
+  flex: none;
+  padding: 8px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+.chip:hover { border-color: var(--primary-soft); }
+.chip.on {
+  background: var(--primary); border-color: var(--primary); color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(175, 180, 43, 0.35);
+}
+.chip .cnt {
+  font-size: 11px; padding: 0 6px; border-radius: 9px;
+  background: rgba(0, 0, 0, 0.08);
+}
+.chip.on .cnt { background: rgba(255, 255, 255, 0.28); }
+
+.content { padding: 16px 18px 24px; }
+
+/* ---------------- 视图通用件 ---------------- */
+.panel {
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 14px;
+}
+.panel-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.panel-title { font-size: 15px; font-weight: 800; color: var(--primary-deep); }
+.panel-desc { font-size: 12px; color: var(--muted); }
+
+.stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.stat {
+  background: var(--primary-wash); border: 1px solid #e0e8bd;
+  border-radius: 9px; padding: 8px 14px; min-width: 108px;
+}
+.stat .k { font-size: 12px; color: var(--primary-deep); }
+.stat .v { font-size: 19px; font-weight: 800; color: var(--primary-deep); margin-top: 2px; }
+
+.err { background: #fdecea; border: 1px solid #f5c6c2; color: #a32b20; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; }
+.ok-tip { background: var(--primary-wash); border: 1px solid #e0e8bd; color: var(--primary-deep); padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; }
+
+.act {
+  padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 13px;
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+}
+.act:hover { border-color: var(--primary-soft); color: var(--primary-deep); }
+.act.primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700; }
+.act.primary:hover { background: var(--primary-deep); color: #fff; }
+.act.sm { padding: 4px 10px; font-size: 12px; }
+.act:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.fld { padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px; font-size: 13px; background: #fff; }
+.fld.n { width: 96px; }
+
+.el-table { --el-table-header-bg-color: var(--primary-wash); --el-table-header-text-color: var(--primary-deep); }
+.el-button--primary { background: var(--primary) !important; border-color: var(--primary) !important; color: #fff !important; }
