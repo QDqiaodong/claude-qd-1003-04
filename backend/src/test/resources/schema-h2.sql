@@ -2,11 +2,37 @@
 -- 进厂磅单、洗罐、成品糖批次、质量复检表；唯一索引和 CHECK 约束在数据库层兜底。
 
 DROP TABLE IF EXISTS feed_batch;
+DROP TABLE IF EXISTS press_control;
 DROP TABLE IF EXISTS cane_intake;
 DROP TABLE IF EXISTS sugar_quality_inspection;
 DROP TABLE IF EXISTS sugar_batch;
 DROP TABLE IF EXISTS pan_wash;
 DROP TABLE IF EXISTS evap_pan;
+DROP TABLE IF EXISTS press_station;
+
+CREATE TABLE press_station (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    station_code        VARCHAR(24) NOT NULL UNIQUE,
+    station_name        VARCHAR(64) NOT NULL,
+    design_capacity_tph DECIMAL(8,2) NOT NULL,
+    current_load_tph    DECIMAL(8,2) NOT NULL DEFAULT 0,
+    occupied_kg         DECIMAL(14,2) NOT NULL DEFAULT 0,
+    status              VARCHAR(16) NOT NULL,
+    last_maintain_at    TIMESTAMP,
+    CONSTRAINT ck_press_occupied CHECK (occupied_kg >= 0 AND occupied_kg <= design_capacity_tph * 1000),
+    CONSTRAINT ck_press_maintain_zero CHECK (status <> '检修' OR current_load_tph = 0)
+);
+
+CREATE TABLE press_control (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    request_id       VARCHAR(36) NOT NULL UNIQUE,
+    station_id       BIGINT NOT NULL,
+    op_type          VARCHAR(16) NOT NULL,
+    target_status    VARCHAR(16),
+    target_load_tph  DECIMAL(8,2),
+    created_at       TIMESTAMP NOT NULL,
+    CONSTRAINT fk_press_control_station FOREIGN KEY (station_id) REFERENCES press_station(id)
+);
 
 CREATE TABLE cane_intake (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,

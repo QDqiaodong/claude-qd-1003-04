@@ -57,6 +57,7 @@ public class PressStation {
     @Column(name = "status", nullable = false, length = 16)
     private String status;
 
+    /** 最近一次转入检修的时间：转检修时与状态、负荷归零同事务写入，重复进入不会被覆盖 */
     @Column(name = "last_maintain_at")
     private LocalDateTime lastMaintainAt;
 

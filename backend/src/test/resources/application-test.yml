@@ -7,6 +7,10 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: ""
+    hikari:
+      # 并发竞态用例会让多个事务排队等同一机组行锁；放宽 H2 默认 1s 锁等待，
+      # 避免慢 CI 上误判锁超时（MySQL 侧 innodb_lock_wait_timeout 默认 50s）
+      connection-init-sql: SET LOCK_TIMEOUT 10000
   sql:
     init:
       mode: always

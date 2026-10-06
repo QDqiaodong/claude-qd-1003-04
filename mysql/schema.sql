@@ -20,6 +20,7 @@ USE sugar_refinery;
 
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS feed_batch;
+DROP TABLE IF EXISTS press_control;
 DROP TABLE IF EXISTS sugar_quality_inspection;
 DROP TABLE IF EXISTS sugar_batch;
 DROP TABLE IF EXISTS pan_wash;
@@ -60,9 +61,26 @@ CREATE TABLE press_station (
     current_load_tph    DECIMAL(8,2) NOT NULL DEFAULT 0 COMMENT '当前负荷',
     occupied_kg         DECIMAL(14,2) NOT NULL DEFAULT 0 COMMENT '投料批已占用（千克，投料交接闭环维护）',
     status              VARCHAR(16) NOT NULL COMMENT '运行/停机/检修',
-    last_maintain_at    DATETIME,
-    -- 兜底防线：累计占用不得超过设计处理量对应的千克数
-    CONSTRAINT ck_press_occupied CHECK (occupied_kg >= 0 AND occupied_kg <= design_capacity_tph * 1000)
+    last_maintain_at    DATETIME COMMENT '最近一次转入检修的时间',
+    -- 兜底防线①：累计占用不得超过设计处理量对应的千克数
+    CONSTRAINT ck_press_occupied CHECK (occupied_kg >= 0 AND occupied_kg <= design_capacity_tph * 1000),
+    -- 兜底防线②：检修中的机组负荷必须为零（正常路径由转检修原子语句保证）
+    CONSTRAINT ck_press_maintain_zero CHECK (status <> '检修' OR current_load_tph = 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------- 压榨机组操作流水（幂等记录） ----------------
+-- 值班员每次调负荷 / 状态切换都带 request_id：重复点击、超时重试共用一键。
+-- 唯一索引在数据库层兜底「一次操作意图只落一条结果」：并发重复提交抢入失败的事务
+-- 整体回滚，由控制器返回第一次落下的机组状态，不会重复推进状态或覆盖检修时间。
+CREATE TABLE press_control (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    request_id       VARCHAR(36) NOT NULL UNIQUE COMMENT '幂等键：一次操作意图一个',
+    station_id       BIGINT NOT NULL COMMENT '目标机组',
+    op_type          VARCHAR(16) NOT NULL COMMENT 'SET_LOAD 调负荷 / TRANSFER 状态切换',
+    target_status    VARCHAR(16) COMMENT 'TRANSFER 目标状态',
+    target_load_tph  DECIMAL(8,2) COMMENT 'SET_LOAD 目标负荷',
+    created_at       DATETIME NOT NULL COMMENT '操作落库时间',
+    CONSTRAINT fk_press_control_station FOREIGN KEY (station_id) REFERENCES press_station(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------- 投料批（投料交接单） ----------------
