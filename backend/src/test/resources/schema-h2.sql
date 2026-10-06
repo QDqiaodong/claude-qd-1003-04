@@ -1,5 +1,5 @@
 -- H2（MODE=MySQL）测试库结构：与 MySQL schema.sql 同构，保留闭环测试涉及的
--- 进厂磅单、洗罐、成品糖批次、质量复检表；唯一索引和 CHECK 约束在数据库层兜底。
+-- 进厂磅单、压榨机组、洗罐、成品糖批次、质量复检表；唯一索引和 CHECK 约束在数据库层兜底。
 
 DROP TABLE IF EXISTS feed_batch;
 DROP TABLE IF EXISTS cane_intake;
@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS sugar_quality_inspection;
 DROP TABLE IF EXISTS sugar_batch;
 DROP TABLE IF EXISTS pan_wash;
 DROP TABLE IF EXISTS evap_pan;
+DROP TABLE IF EXISTS press_station;
 
 CREATE TABLE cane_intake (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -67,8 +68,22 @@ CREATE TABLE sugar_quality_inspection (
        OR (conclusion = '不通过' AND reject_reason IS NOT NULL AND CHAR_LENGTH(TRIM(reject_reason)) > 0))
 );
 
-CREATE TABLE evap_pan (
-    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE press_station (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    station_code        VARCHAR(24) NOT NULL UNIQUE,
+    station_name        VARCHAR(64) NOT NULL,
+    design_capacity_tph DECIMAL(8,2) NOT NULL,
+    current_load_tph    DECIMAL(8,2) NOT NULL DEFAULT 0,
+    occupied_kg         DECIMAL(14,2) NOT NULL DEFAULT 0,
+    status              VARCHAR(16) NOT NULL,
+    last_maintain_at    TIMESTAMP,
+    last_request_id     VARCHAR(36),
+    CONSTRAINT ck_press_occupied CHECK (occupied_kg >= 0 AND occupied_kg <= design_capacity_tph * 1000),
+    CONSTRAINT ck_press_maintain CHECK
+      (status <> '检修' OR (current_load_tph = 0 AND last_maintain_at IS NOT NULL))
+);
+
+CREATE TABLE evap_pan (    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     pan_code     VARCHAR(24) NOT NULL UNIQUE,
     pan_name     VARCHAR(64) NOT NULL,
     pan_type     VARCHAR(16) NOT NULL,

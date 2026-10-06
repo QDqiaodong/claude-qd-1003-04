@@ -34,7 +34,9 @@ export default {
   listPresses: (p) => call(http.get('/press-stations', params(p))),
   createPress: (d) => call(http.post('/press-stations', d)),
   setLoad: (id, loadTph) => call(http.post(`/press-stations/${id}/load`, null, params({ loadTph }))),
-  transferPress: (id, target) => call(http.post(`/press-stations/${id}/transfer`, null, params({ target }))),
+  // requestId 是幂等键：一次流转意图重复点击 / 超时重试必须带同一个
+  transferPress: (id, target, requestId) =>
+    call(http.post(`/press-stations/${id}/transfer`, null, params({ target, requestId }))),
 
   // ---------------- 投料交接 ----------------
   listFeedBatches: (p) => call(http.get('/feed-batches', params(p))),

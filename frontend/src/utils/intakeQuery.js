@@ -39,14 +39,9 @@ export function intakeFiltersFromQuery(query) {
 /**
  * 加载序列闸：每次加载取一个递增令牌，只有持最后一次令牌的响应允许落地。
  * 值班员连续快速切换条件时，较早发出的慢响应不得覆盖最后一次选择。
+ * 实现已抽到 utils/loadGate.js（PressView 等同款需求共用），这里保持再导出。
  */
-export function createLoadGate() {
-  let seq = 0
-  return {
-    next() { return ++seq },
-    isCurrent(token) { return token === seq }
-  }
-}
+export { createLoadGate } from './loadGate.js'
 
 /**
  * 加载失败提示：明确告知筛选条件已保留，可按原条件重试。

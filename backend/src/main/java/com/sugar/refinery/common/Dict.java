@@ -128,6 +128,11 @@ public final class Dict {
         return PRESS_NEXT.getOrDefault(from, List.of()).contains(to);
     }
 
+    /** 当前状态允许转到的目标列表（用于非法转换时提示可执行动作） */
+    public static List<String> pressNextTargets(String from) {
+        return PRESS_NEXT.getOrDefault(from, List.of());
+    }
+
     public static boolean isValidFeedStatus(String s) {
         return s != null && FEED_STATUSES.contains(s);
     }

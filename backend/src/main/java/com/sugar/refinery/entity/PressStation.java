@@ -60,6 +60,13 @@ public class PressStation {
     @Column(name = "last_maintain_at")
     private LocalDateTime lastMaintainAt;
 
+    /**
+     * 最近一次状态流转的幂等键：值班员一次「流转意图」只生效一次，
+     * 重复点击 / 超时重试带同一键直接回放当前状态，不重复记录检修时间。
+     */
+    @Column(name = "last_request_id", length = 36)
+    private String lastRequestId;
+
     /** 负荷率（%），派生字段 */
     @Transient
     public Double getLoadRate() {

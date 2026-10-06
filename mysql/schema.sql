@@ -52,6 +52,8 @@ CREATE TABLE cane_intake (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------- 压榨机组 ----------------
+-- 转检修在同一事务里把负荷归零并记录本次检修时间（last_maintain_at）；
+-- last_request_id 是状态流转的幂等键：重复点击 / 超时重试只生效一次，不覆盖检修时间。
 CREATE TABLE press_station (
     id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
     station_code        VARCHAR(24) NOT NULL UNIQUE,
@@ -60,9 +62,13 @@ CREATE TABLE press_station (
     current_load_tph    DECIMAL(8,2) NOT NULL DEFAULT 0 COMMENT '当前负荷',
     occupied_kg         DECIMAL(14,2) NOT NULL DEFAULT 0 COMMENT '投料批已占用（千克，投料交接闭环维护）',
     status              VARCHAR(16) NOT NULL COMMENT '运行/停机/检修',
-    last_maintain_at    DATETIME,
-    -- 兜底防线：累计占用不得超过设计处理量对应的千克数
-    CONSTRAINT ck_press_occupied CHECK (occupied_kg >= 0 AND occupied_kg <= design_capacity_tph * 1000)
+    last_maintain_at    DATETIME COMMENT '最近检修时间（转检修同事务写入）',
+    last_request_id     VARCHAR(36) COMMENT '最近一次状态流转的幂等键',
+    -- 兜底防线①：累计占用不得超过设计处理量对应的千克数
+    CONSTRAINT ck_press_occupied CHECK (occupied_kg >= 0 AND occupied_kg <= design_capacity_tph * 1000),
+    -- 兜底防线②：检修中的机组负荷必须已归零且留有本次检修时间
+    CONSTRAINT ck_press_maintain CHECK
+      (status <> '检修' OR (current_load_tph = 0 AND last_maintain_at IS NOT NULL))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------- 投料批（投料交接单） ----------------
